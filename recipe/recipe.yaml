@@ -1,48 +1,73 @@
 context:
-  name: python-lzf
-  version: 0.2.6
+  version: 0.3.5
 
-package:
-  name: ${{ name|lower }}
+recipe:
+  name: python-lzf-split
   version: ${{ version }}
 
 source:
-  url: https://pypi.org/packages/source/${{ name[0] }}/${{ name }}/python_lzf-${{ version }}.tar.gz
-  sha256: 47db5c2cb371bdc45f61cca3e12154ca5a7a7fbb8e1a3af8e5c62d14129da1d0
+  url: https://pypi.org/packages/source/p/python-neo-lzf/python_neo_lzf-${{ version }}.tar.gz
+  sha256: 77395b729d224c65b7b69c2b8ba89995f9bbc21bf7a8401865763c8fcafa90a7
 
 build:
-  number: 5
-  script: ${{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+  number: 0
 
-requirements:
-  build:
-    - ${{ compiler("c") }}
-    - ${{ stdlib("c") }}
-  host:
-    - python
-    - pip
-    - setuptools
-  run:
-    - python
+outputs:
+  - package:
+      name: python-neo-lzf
 
-tests:
-  - python:
-      imports:
-        - lzf
-      pip_check: false
-  - files:
-      recipe:
-        - tests.py
-      source:
-        - lzf_module.c
-    script:
-      - python tests.py
+    build:
+      script: ${{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+
+    requirements:
+      build:
+        - ${{ compiler("c") }}
+        - ${{ stdlib("c") }}
+        - if: (build_platform != host_platform)
+          then:
+            - cross-python_${{ host_platform }}
+            - python
+        - setuptools
+
+      host:
+        - python
+        - pip
+        - setuptools
+
+      run:
+        - python
+
+    tests:
+      - python:
+          imports:
+            - lzf
+
+      - files:
+          recipe:
+            - tests.py
+          source:
+            - lzf_module.c
+
+        script:
+          - python tests.py
+
+  - package:
+      name: python-lzf
+
+    requirements:
+      run:
+        - ${{ pin_subpackage('python-neo-lzf', exact=True) }}
+
+    tests:
+      - python:
+          imports:
+            - lzf
 
 about:
   summary: C Extension for liblzf
   license: BSD-3-Clause
   license_file: LICENSE
-  homepage: http://github.com/teepark/python-lzf
+  homepage: https://github.com/FledgeXu/python-neo-lzf
 
 extra:
   recipe-maintainers:
